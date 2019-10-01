@@ -1,3 +1,4 @@
+require "json"
 require "./libta_lib"
 
 module CrystalTalib
@@ -6,6 +7,7 @@ module CrystalTalib
 
   # execute: https://github.com/oransel/node-talib/blob/master/src/talib.cpp#L554
 
+  # TODO: free all the things
   def execute(
     name : String,
     start_idx : Int32,
@@ -163,13 +165,10 @@ module CrystalTalib
     end
 
     out_real = Array(Float64).new()
-    out_int = Array(Int32).new(func_info.value.nb_output)
+    # out_int = Array(Int32).new(func_info.value.nb_output)
 
     # Loop for all the ouput parameters
     (0..func_info.value.nb_output - 1).each do |i|
-      # pp "set this one : #{end_idx-start_idx - 1}"
-      # out_real[i] = Array(Float64).new(end_idx-start_idx - 1)
-
       ret_code = LibTaLib.get_output_parameter_info(
         func_info.value.handle,
         i,
@@ -197,7 +196,7 @@ module CrystalTalib
           exit 1
         end
         # out_int[i] = real_val
-        out_int.push(int_val)
+        out_real.push(int_val.to_f)
       end
     end
 
@@ -213,15 +212,56 @@ module CrystalTalib
       pp "call_func failed: #{ret_code}"
       exit 1
     end
+
+    # Loop for all the output parameters
+    (0..func_info.value.nb_output - 1).each do |i|
+      ret_code = LibTaLib.get_output_parameter_info(
+        func_info.value.handle,
+        i,
+        out output_paraminfo
+      )
+      if ret_code != LibTaLib::RetCode::Success
+        pp "get_output_parameter_info failed: #{ret_code}"
+        exit 1
+      end
+
+      out_array = Array(Float64).new
+
+      pp "nb_element : #{nb_element}"
+
+      (0..nb_element-1).each do |y|
+        # case output_paraminfo.value.type
+        # when LibTaLib::OutputParameterType::OutputReal
+        # when LibTaLib::OutputParameterType::OutputInteger
+        # end
+      end
+
+      pp String.new(output_paraminfo.value.param_name)
+
+      pp "out real #{out_real}"
+    end
   end
 end
+
+contents = File.read("./spec/marketdata.json")
+# json = JSON.parse(contents)
+
+class MarketData
+  include JSON::Serializable
+
+  property high : Array(Float64)
+  property low : Array(Float64)
+  property close : Array(Float64)
+end
+
+market_data = MarketData.from_json(contents)
 
 CrystalTalib.execute(
   "ADX",
   start_idx: 0,
-  end_idx: 2,
-  high: [1.1, 2.2, 3.3],
-  low: [1.1, 2.2, 3.3],
-  close: [1.1, 2.2, 3.3],
+  end_idx: market_data.close.size - 1,
+  high: market_data.high,
+  low: market_data.low,
+  close: market_data.close,
   opt_in_time_period: 9
 )
