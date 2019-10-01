@@ -1,0 +1,9 @@
+name: crystal_talib
+version: 0.1.0
+
+authors:
+  - Nick Franken <shnick@gmail.com>
+
+crystal: 0.30.1
+
+license: MIT
