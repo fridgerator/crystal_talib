@@ -8,6 +8,8 @@ module CrystalTalib
 
   def execute(
     name : String,
+    start_idx : Int32,
+    end_idx : Int32,
     open : Array(Float64)? = nil,
     high : Array(Float64)? = nil,
     low : Array(Float64)? = nil,
@@ -125,12 +127,15 @@ module CrystalTalib
     # Loop for all the optional input parameters
     (0..func_info.value.nb_opt_input - 1).each do |i|
 
-      # get_opt_input_parameter_info = TA_GetOptInputParameterInfo(handle : FuncHandle*, param_index : LibC::UInt, info : OptInputParameterInfo**)
-      LibTaLib.get_opt_input_parameter_info(
+      ret_code = LibTaLib.get_opt_input_parameter_info(
         func_info.value.handle,
         i,
         out opt_paraminfo
       )
+      if ret_code != LibTaLib::RetCode::Success
+        pp "get_opt_input_parameter_info failed: #{ret_code}"
+        exit 1
+      end
 
       param_name = String.new(opt_paraminfo.value.param_name).underscore
 
@@ -157,13 +162,64 @@ module CrystalTalib
       end
     end
 
+    out_real = Array(Float64).new()
+    out_int = Array(Int32).new(func_info.value.nb_output)
+
     # Loop for all the ouput parameters
-    
+    (0..func_info.value.nb_output - 1).each do |i|
+      # pp "set this one : #{end_idx-start_idx - 1}"
+      # out_real[i] = Array(Float64).new(end_idx-start_idx - 1)
+
+      ret_code = LibTaLib.get_output_parameter_info(
+        func_info.value.handle,
+        i,
+        out output_paraminfo
+      )
+
+      if ret_code != LibTaLib::RetCode::Success
+        pp "get_output_parameter_info failed: #{ret_code}"
+        exit 1
+      end
+
+      case output_paraminfo.value.type
+      when LibTaLib::OutputParameterType::OutputReal
+        ret_code = LibTaLib.set_output_param_real_ptr(func_params, i, out real_val)
+        if ret_code != LibTaLib::RetCode::Success
+          pp "set_output_param_real_ptr failed: #{ret_code}"
+          exit 1
+        end
+        # out_real[i] = real_val
+        out_real.push(real_val)
+      when LibTaLib::OutputParameterType::OutputInteger
+        ret_code = LibTaLib.set_output_param_integer_ptr(func_params, i, out int_val)
+        if ret_code != LibTaLib::RetCode::Success
+          pp "set_output_param_integer_ptr failed: #{ret_code}"
+          exit 1
+        end
+        # out_int[i] = real_val
+        out_int.push(int_val)
+      end
+    end
+
+    # call_func = TA_CallFunc(params : ParamHolder*, start_idx : Integer, end_idx : Integer, out_beg_idx : Integer*, out_nb_element : Integer*)
+    ret_code = LibTaLib.call_func(
+      func_params,
+      start_idx,
+      end_idx,
+      out beg_idx,
+      out nb_element
+    )
+    if ret_code != LibTaLib::RetCode::Success
+      pp "call_func failed: #{ret_code}"
+      exit 1
+    end
   end
 end
 
 CrystalTalib.execute(
   "ADX",
+  start_idx: 0,
+  end_idx: 2,
   high: [1.1, 2.2, 3.3],
   low: [1.1, 2.2, 3.3],
   close: [1.1, 2.2, 3.3],
