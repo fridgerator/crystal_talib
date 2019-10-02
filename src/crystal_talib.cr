@@ -5,7 +5,6 @@ module CrystalTalib
   extend self
   VERSION = "0.1.0"
 
-  # TODO: free all the things
   def execute(
     name : String,
     start_idx : Int32,
@@ -53,6 +52,7 @@ module CrystalTalib
     (0..func_info.value.nb_input - 1).each do |i|
       ret_code = LibTaLib.get_input_parameter_info(func_info.value.handle, i, out input_paraminfo)
       if ret_code != LibTaLib::RetCode::Success
+        LibTaLib.param_holder_free(func_params)
         pp "get_input_parameter_info failed: #{ret_code}"
         return nil
       end
@@ -128,11 +128,41 @@ module CrystalTalib
 
       when LibTaLib::InputParameterType::InputReal
 
-        pp "TODO: InputParameterType::InputReal"
+        pname = String.new(input_paraminfo.value.param_name).underscore
+
+        unless optional_args[pname]?
+          LibTaLib.param_holder_free(func_params)
+          pp "argument #{pname} required"
+        end
+
+        arg = optional_args[pname]
+        if (arg.is_a?(Array(Float64)))
+          ret_code = LibTaLib.set_input_param_real_ptr(func_params, i, arg.to_unsafe)
+          if ret_code != LibTaLib::RetCode::Success
+            LibTaLib.param_holder_free(func_params)
+            pp "set_input_param_real_ptr failed: #{ret_code}"
+            return nil
+          end
+        end
 
       when LibTaLib::InputParameterType::InputInteger
 
-        pp "TODO: InputParameterType::InputInteger"
+        pname = String.new(input_paraminfo.value.param_name).underscore
+
+        unless optional_args[pname]?
+          LibTaLib.param_holder_free(func_params)
+          pp "argument #{pname} required"
+        end
+
+        arg = optional_args[pname]
+        if (arg.is_a?(Array(Int32)))
+          ret_code = LibTaLib.set_input_param_real_ptr(func_params, i, arg.to_unsafe)
+          if ret_code != LibTaLib::RetCode::Success
+            LibTaLib.param_holder_free(func_params)
+            pp "set_input_param_real_ptr failed: #{ret_code}"
+            return nil
+          end
+        end
 
       end
     end
@@ -159,20 +189,30 @@ module CrystalTalib
       end
 
       case opt_paraminfo.value.type
-      when LibTaLib::OptInputParameterType::OptInputRealRange, LibTaLib::OptInputParameterType::OptInputRealList
-        ret_code = LibTaLib.set_opt_input_param_real(func_params, i, optional_args[param_name])
-        if ret_code != LibTaLib::RetCode::Success
-          LibTaLib.param_holder_free(func_params)
-          pp "set_opt_input_param_real failed: #{ret_code}"
-          return nil
+      when LibTaLib::OptInputParameterType::OptInputRealRange,
+          LibTaLib::OptInputParameterType::OptInputRealList
+
+        arg = optional_args[param_name]
+        if (arg.is_a?(Float64))
+          ret_code = LibTaLib.set_opt_input_param_real(func_params, i, arg)
+          if ret_code != LibTaLib::RetCode::Success
+            LibTaLib.param_holder_free(func_params)
+            pp "set_opt_input_param_real failed: #{ret_code}"
+            return nil
+          end
         end
 
-      when LibTaLib::OptInputParameterType::OptInputIntegerRange, LibTaLib::OptInputParameterType::OptInputIntegerList
-        ret_code = LibTaLib.set_opt_input_param_integer(func_params, i, optional_args[param_name])
-        if ret_code != LibTaLib::RetCode::Success
-          LibTaLib.param_holder_free(func_params)
-          pp "set_opt_input_param_integer failed: #{ret_code}"
-          return nil
+      when LibTaLib::OptInputParameterType::OptInputIntegerRange,
+        LibTaLib::OptInputParameterType::OptInputIntegerList
+
+        arg = optional_args[param_name]
+        if (arg.is_a?(Int32))
+          ret_code = LibTaLib.set_opt_input_param_integer(func_params, i, arg)
+          if ret_code != LibTaLib::RetCode::Success
+            LibTaLib.param_holder_free(func_params)
+            pp "set_opt_input_param_integer failed: #{ret_code}"
+            return nil
+          end
         end
       end
     end
@@ -257,27 +297,3 @@ module CrystalTalib
     return results
   end
 end
-
-contents = File.read("./spec/marketdata.json")
-
-class MarketData
-  include JSON::Serializable
-
-  property high : Array(Float64)
-  property low : Array(Float64)
-  property close : Array(Float64)
-end
-
-market_data = MarketData.from_json(contents)
-
-result = CrystalTalib.execute(
-  "ADX",
-  start_idx: 0,
-  end_idx: market_data.close.size - 1,
-  high: market_data.high,
-  low: market_data.low,
-  close: market_data.close,
-  opt_in_time_period: 9
-)
-
-pp "result #{result}"
