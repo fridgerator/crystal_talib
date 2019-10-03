@@ -16,7 +16,7 @@ module CrystalTalib
     volume : Array(Float64)? = nil,
     openinterest : Array(Float64)? = nil,
     **optional_args
-    )
+  )
     if start_idx < 0 || end_idx < 0
       pp "start_idx and end_idx need to be positive"
       return nil
@@ -56,10 +56,9 @@ module CrystalTalib
         pp "get_input_parameter_info failed: #{ret_code}"
         return nil
       end
-      
+
       case input_paraminfo.value.type
       when LibTaLib::InputParameterType::InputPrice
-
         open_required = (input_paraminfo.value.flags & LibTaLib::IN_PRICE_OPEN) != 0
         if open_required && open.nil?
           LibTaLib.param_holder_free(func_params)
@@ -125,9 +124,7 @@ module CrystalTalib
           pp "set_input_param_price_ptr failed: #{ret_code}"
           return nil
         end
-
       when LibTaLib::InputParameterType::InputReal
-
         pname = String.new(input_paraminfo.value.param_name).underscore
 
         unless optional_args[pname]?
@@ -144,9 +141,7 @@ module CrystalTalib
             return nil
           end
         end
-
       when LibTaLib::InputParameterType::InputInteger
-
         pname = String.new(input_paraminfo.value.param_name).underscore
 
         unless optional_args[pname]?
@@ -163,7 +158,6 @@ module CrystalTalib
             return nil
           end
         end
-
       end
     end
 
@@ -190,8 +184,7 @@ module CrystalTalib
 
       case opt_paraminfo.value.type
       when LibTaLib::OptInputParameterType::OptInputRealRange,
-          LibTaLib::OptInputParameterType::OptInputRealList
-
+           LibTaLib::OptInputParameterType::OptInputRealList
         arg = optional_args[param_name]
         if (arg.is_a?(Float64))
           ret_code = LibTaLib.set_opt_input_param_real(func_params, i, arg)
@@ -201,10 +194,8 @@ module CrystalTalib
             return nil
           end
         end
-
       when LibTaLib::OptInputParameterType::OptInputIntegerRange,
-        LibTaLib::OptInputParameterType::OptInputIntegerList
-
+           LibTaLib::OptInputParameterType::OptInputIntegerList
         arg = optional_args[param_name]
         if (arg.is_a?(Int32))
           ret_code = LibTaLib.set_opt_input_param_integer(func_params, i, arg)
@@ -218,7 +209,7 @@ module CrystalTalib
     end
 
     out_real = Array(Array(Float64)).new
-    # out_int = Array(Int32).new(func_info.value.nb_output)
+    # out_int = Array(Array(Int32)).new
 
     # Loop for all the ouput parameters
     (0..func_info.value.nb_output - 1).each do |i|
@@ -245,6 +236,7 @@ module CrystalTalib
         end
       when LibTaLib::OutputParameterType::OutputInteger
         pp "TODO: output int"
+        return nil
       end
     end
 
@@ -263,9 +255,9 @@ module CrystalTalib
     results = Hash(String, Array(Float64)).new
 
     results = {
-      beg_index: start_idx,
+      beg_index:  start_idx,
       nb_element: nb_element,
-      result: Hash(String, Array(Float64)).new
+      result:     Hash(String, Array(Float64)).new,
     }
 
     # Loop for all the output parameters
@@ -282,11 +274,13 @@ module CrystalTalib
 
       out_array = Array(Float64).new
 
-      (0..nb_element-1).each do |x|
+      (0..nb_element - 1).each do |x|
         case output_paraminfo.value.type
         when LibTaLib::OutputParameterType::OutputReal
           out_array.push(out_real[i][x])
         when LibTaLib::OutputParameterType::OutputInteger
+          pp "TODO: output int"
+          return nil
         end
       end
 
