@@ -13,7 +13,7 @@ Crystal bindings for the [TA-lib](http://ta-lib.org/) library.  TA-Lib performs 
    ```yaml
    dependencies:
      crystal_talib:
-       github: your-github-user/crystal_talib
+       github: fridgerator/crystal_talib
    ```
 
 4. Run `shards install`
@@ -22,17 +22,34 @@ Crystal bindings for the [TA-lib](http://ta-lib.org/) library.  TA-Lib performs 
 
 ```crystal
 require "crystal_talib"
+
+# List all TA-LIB functions
+functions = result = CrystalTalib.functions
+functions # Array(String)
+
+# Execute a TA-LIB function
+market_data = { open: Array(Float64), close: Array(Float64), high: Array(Float64), low: Array(Float64), volume: Array(Float64) }
+result = CrystalTalib.execute(
+  "ADX",
+  start_idx: 0,
+  end_idx: market_data.close.size - 1,
+  high: market_data.high,
+  low: market_data.low,
+  close: market_data.close,
+  opt_in_time_period: 9
+)
+
+result.beg_index # Int32
+result.nb_element # Int32
+result.result #  Hash(String, Array(Float64))
+
+# Discover input and output parameters of functions
+function_description = CrystalTalib.explain("ADX")
 ```
-
-TODO: Write usage instructions here
-
-## Development
-
-TODO: Write development instructions here
 
 ## Contributing
 
-1. Fork it (<https://github.com/your-github-user/crystal_talib/fork>)
+1. Fork it (<https://github.com/fridgerator/crystal_talib/fork>)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
@@ -40,4 +57,4 @@ TODO: Write development instructions here
 
 ## Contributors
 
-- [Nick Franken](https://github.com/your-github-user) - creator and maintainer
+- [Nick Franken](https://github.com/fridgerator) - creator and maintainer
