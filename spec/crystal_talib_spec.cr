@@ -15,7 +15,9 @@ describe CrystalTalib do
         opt_in_time_period: 9
       )
 
-      result.should_not be_nil
+      result[:beg_index].should be_a(Int32)
+      result[:nb_element].should be_a(Int32)
+      result[:result].should be_a(Hash(String, Array(Float64)))
     end
 
     it "SMA" do
@@ -28,7 +30,9 @@ describe CrystalTalib do
         opt_in_time_period: 180
       )
 
-      result.should_not be_nil
+      result[:beg_index].should be_a(Int32)
+      result[:nb_element].should be_a(Int32)
+      result[:result].should be_a(Hash(String, Array(Float64)))
     end
   end
 end
