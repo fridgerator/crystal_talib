@@ -247,6 +247,7 @@ module CrystalTalib
       out beg_idx,
       out nb_element
     )
+    LibTaLib.param_holder_free(func_params)
     if ret_code != LibTaLib::RetCode::Success
       pp "call_func failed: #{ret_code}"
       return nil
@@ -255,7 +256,7 @@ module CrystalTalib
     results = Hash(String, Array(Float64)).new
 
     results = {
-      beg_index:  start_idx,
+      beg_index:  beg_idx,
       nb_element: nb_element,
       result:     Hash(String, Array(Float64)).new,
     }
