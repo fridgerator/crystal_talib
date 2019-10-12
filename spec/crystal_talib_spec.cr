@@ -3,25 +3,27 @@ require "../src/crystal_talib"
 
 describe CrystalTalib do
   describe "#explain" do
-    result = CrystalTalib.explain("ADX")
+    it "ADX" do
+      result = CrystalTalib.explain("ADX")
 
-    result[:name].should eq("ADX")
-    result[:group].should eq("Momentum Indicators")
-    result[:hint].should eq("Average Directional Movement Index")
+      result[:name].should eq("ADX")
+      result[:group].should eq("Momentum Indicators")
+      result[:hint].should eq("Average Directional Movement Index")
 
-    result[:inputs][0][:name].should eq("inPriceHLC")
-    result[:inputs][0][:type].should eq("price")
-    result[:inputs][0][:flags].should eq(["high", "low", "close"])
+      result[:inputs][0][:name].should eq("inPriceHLC")
+      result[:inputs][0][:type].should eq("price")
+      result[:inputs][0][:flags].should eq(["high", "low", "close"])
 
-    result[:opt_inputs][0][:name].should eq("optInTimePeriod")
-    result[:opt_inputs][0][:display_name].should eq("Time Period")
-    result[:opt_inputs][0][:hint].should eq("Number of period")
-    result[:opt_inputs][0][:type].should eq("integer_range")
-    result[:opt_inputs][0][:flags].should eq([] of String)
+      result[:opt_inputs][0][:name].should eq("optInTimePeriod")
+      result[:opt_inputs][0][:display_name].should eq("Time Period")
+      result[:opt_inputs][0][:hint].should eq("Number of period")
+      result[:opt_inputs][0][:type].should eq("integer_range")
+      result[:opt_inputs][0][:flags].should eq([] of String)
 
-    result[:outputs][0][:name].should eq("outReal")
-    result[:outputs][0][:type].should eq("real")
-    result[:outputs][0][:flags].should eq(["line"])
+      result[:outputs][0][:name].should eq("outReal")
+      result[:outputs][0][:type].should eq("real")
+      result[:outputs][0][:flags].should eq(["line"])
+    end
   end
 
   describe "#execute" do
