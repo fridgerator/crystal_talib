@@ -8,4 +8,5 @@ module CrystalTalib
 
   extend Execute
   extend Explain
+  extend Functions
 end

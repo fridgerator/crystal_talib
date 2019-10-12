@@ -2,6 +2,13 @@ require "./spec_helper"
 require "../src/crystal_talib"
 
 describe CrystalTalib do
+  describe "#functions" do
+    it "should print the lib functions" do
+      result = CrystalTalib.functions
+      result.should_not be_empty
+    end
+  end
+
   describe "#explain" do
     it "ADX" do
       result = CrystalTalib.explain("ADX")
